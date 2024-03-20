@@ -19,6 +19,10 @@ cmake_policy(SET CMP0069 NEW)
 # nice when it's possible, and it's possible on our Windows configs.
 cmake_policy(SET CMP0092 NEW)
 
+set(CMAKE_C_COMPILER /opt/cray/pe/gcc/11.2.0/bin/gcc)
+set(CMAKE_CXX_COMPILER /opt/cray/pe/gcc/11.2.0/bin/g++)
+
+
 # ---[ Project and semantic versioning.
 project(Torch CXX C)
 
