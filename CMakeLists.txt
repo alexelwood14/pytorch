@@ -24,6 +24,11 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 message(FATAL_ERROR "In-source build are not supported")
 endif()
 
+set(CMAKE_C_COMPILER /opt/nvidia/hpc_sdk/Linux_x86_64/2023/compilers/bin/nvc)
+set(CMAKE_CXX_COMPILER /opt/nvidia/hpc_sdk/Linux_x86_64/2023/compilers/bin/nvc++)
+set(USE_ROCM 0)
+set(CMAKE_INSTALL_PREFIX /lustre/home/br-aelwood/opt)
+set(CUDA_HOME /opt/nvidia/hpc_sdk/Linux_x86_64/2023/cuda/)
 
 # ---[ Project and semantic versioning.
 project(Torch CXX C)
