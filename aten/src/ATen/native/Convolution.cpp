@@ -765,40 +765,6 @@ static std::tuple<Tensor, bool> batchify(
   return std::make_tuple(is_batched ? input : input.unsqueeze(0), is_batched);
 }
 
-static void check_input_same_type_as_parameters(
-    const Tensor& input,
-    const Tensor& weight,
-    const Tensor& bias) {
-    return;
-}
-
-static void check_input_same_type_as_parameters(
-    const Tensor& input,
-    const Tensor& weight) {
-  check_input_same_type_as_parameters(input, weight, /*bias=*/ Tensor());
-}
-
-#if AT_MKLDNN_ENABLED()
-static void check_input_same_type_as_parameters(
-    const Tensor& input,
-    const Tensor& weight,
-    const Tensor& bias,
-    const ConvBackend backend) {
-  if (backend == ConvBackend::Mkldnn || backend == ConvBackend::MkldnnTranspose) {
-    TORCH_CHECK(input.options().type_equal(weight.options())
-        || (input.is_mkldnn() && weight.device().is_cpu() && weight.scalar_type() == kFloat),
-        "Input type (", input.toString(), ") and weight type (", weight.toString(),
-        ") should be the same or input should be a MKLDNN tensor and weight is a dense tensor");
-    TORCH_CHECK(!bias.defined() || (input.options().type_equal(bias.options()))
-        || (input.is_mkldnn() && bias.device().is_cpu() && bias.scalar_type() == kFloat),
-        "Input type (", input.toString(), ") and bias type (", bias.toString(),
-        ") should be the same or input should be a MKLDNN tensor and bias is a dense tensor");
-  } else {
-    check_input_same_type_as_parameters(input, weight, bias);
-  }
-}
-#endif
-
 static auto view4d(const at::Tensor& tensor) -> at::Tensor {
   TORCH_CHECK(tensor.ndimension() == 3,
            "expected 3D tensor, got tensor with ", tensor.ndimension(),
@@ -842,7 +808,6 @@ at::Tensor complex_convolution(
     bool transposed,
     SymIntArrayRef output_padding,
     c10::SymInt groups) {
-  check_input_same_type_as_parameters(input, weight, bias);
   Tensor i_r, i_i, w_r, w_i;
   std::tie(i_r, i_i) = complex_to_real(input.resolve_conj());
   std::tie(w_r, w_i) = complex_to_real(weight.resolve_conj());
@@ -881,7 +846,6 @@ at::Tensor complex_convolution_mode(
     c10::SymIntArrayRef dilation,
     c10::SymInt groups) {
   auto bias = bias_opt.value_or(Tensor());
-  check_input_same_type_as_parameters(input, weight, bias);
   Tensor i_r, i_i, w_r, w_i;
   std::tie(i_r, i_i) = complex_to_real(input.resolve_conj());
   std::tie(w_r, w_i) = complex_to_real(weight.resolve_conj());
@@ -1540,7 +1504,6 @@ at::Tensor _convolution(
           params.stride, params.padding, params.dilation);
       break;
     case ConvBackend::Cudnn:
-      check_input_same_type_as_parameters(input, weight, bias);
       output = at::cudnn_convolution(
           input.contiguous(backend_memory_format), weight, params.padding, params.stride,
           params.dilation, params.groups, params.benchmark, params.deterministic, params.allow_tf32);
@@ -1549,7 +1512,6 @@ at::Tensor _convolution(
       }
       break;
     case ConvBackend::CudnnTranspose:
-      check_input_same_type_as_parameters(input, weight, bias);
       output = at::cudnn_convolution_transpose(
           input.contiguous(backend_memory_format), weight, params.padding, params.output_padding,
           params.stride, params.dilation, params.groups, params.benchmark, params.deterministic, params.allow_tf32);
@@ -1580,7 +1542,6 @@ at::Tensor _convolution(
       break;
     }
     case ConvBackend::Miopen:
-      check_input_same_type_as_parameters(input, weight, bias);
       output = at::miopen_convolution(
           input.contiguous(backend_memory_format), weight, bias, params.padding, params.stride,
           params.dilation, params.groups, params.benchmark, params.deterministic);
@@ -1591,14 +1552,12 @@ at::Tensor _convolution(
           params.dilation, params.groups, params.benchmark, params.deterministic);
       break;
     case ConvBackend::MiopenTranspose:
-      check_input_same_type_as_parameters(input, weight, bias);
       output = at::miopen_convolution_transpose(
           input.contiguous(backend_memory_format), weight, bias, params.padding, params.output_padding,
           params.stride, params.dilation, params.groups, params.benchmark, params.deterministic);
       break;
     case ConvBackend::Mkldnn:
 #if AT_MKLDNN_ENABLED()
-      check_input_same_type_as_parameters(input, weight, bias, backend);
       if (!input.is_mkldnn()) {
         // need to ensure contiguous for non-mkldnn tensors
         input = input.contiguous(backend_memory_format);
@@ -1613,7 +1572,6 @@ at::Tensor _convolution(
       break;
     case ConvBackend::MkldnnTranspose:
 #if AT_MKLDNN_ENABLED()
-      check_input_same_type_as_parameters(input, weight, bias, backend);
       if (!input.is_mkldnn()) {
         // need to ensure contiguous for non-mkldnn tensors
         input = input.contiguous(backend_memory_format);
@@ -2079,7 +2037,6 @@ std::tuple<Tensor, Tensor, Tensor> convolution_backward(
       break;
     case ConvBackend::Cudnn:
     {
-      check_input_same_type_as_parameters(input, weight);
       std::array<bool, 2> input_weight_output_mask = {output_mask[0], output_mask[1]};
       std::tie(backend_grad_input, backend_grad_weight) = cudnn_convolution_backward_stub(
           input.device().type(),
@@ -2093,7 +2050,6 @@ std::tuple<Tensor, Tensor, Tensor> convolution_backward(
     case ConvBackend::Mps:
     {
 #ifdef USE_MPS
-      check_input_same_type_as_parameters(input, weight);
       std::tie(backend_grad_input, backend_grad_weight, backend_grad_bias) =
         at::mps_convolution_backward(input, grad_output, weight, params.padding,
           params.stride, params.dilation, params.groups, output_mask);
@@ -2105,7 +2061,6 @@ std::tuple<Tensor, Tensor, Tensor> convolution_backward(
     case ConvBackend::MpsTranspose:
     {
 #ifdef USE_MPS
-      check_input_same_type_as_parameters(input, weight);
       std::array<bool, 2> input_weight_output_mask = {output_mask[0], output_mask[1]};
       std::tie(backend_grad_input, backend_grad_weight) = at::mps_convolution_transpose_backward(
         // Only make input contiguous when it is necessary for the backwards computation
@@ -2119,7 +2074,6 @@ std::tuple<Tensor, Tensor, Tensor> convolution_backward(
     }
     case ConvBackend::CudnnTranspose:
     {
-      check_input_same_type_as_parameters(input, weight);
       std::array<bool, 2> input_weight_output_mask = {output_mask[0], output_mask[1]};
       std::tie(backend_grad_input, backend_grad_weight) = cudnn_convolution_transpose_backward_stub(
         input.device().type(),
@@ -2165,7 +2119,6 @@ std::tuple<Tensor, Tensor, Tensor> convolution_backward(
 #endif
       break;
     case ConvBackend::Miopen:
-      check_input_same_type_as_parameters(input, weight);
       std::tie(backend_grad_input, backend_grad_weight, backend_grad_bias) =
         miopen_convolution_backward_stub(
           input.device().type(),
@@ -2180,7 +2133,6 @@ std::tuple<Tensor, Tensor, Tensor> convolution_backward(
             params.dilation, params.groups, params.benchmark, params.deterministic, output_mask);
       break;
     case ConvBackend::MiopenTranspose:
-      check_input_same_type_as_parameters(input, weight);
       std::tie(backend_grad_input, backend_grad_weight, backend_grad_bias) =
         miopen_convolution_transpose_backward_stub(
           input.device().type(),
