@@ -1007,7 +1007,7 @@ elseif(USE_CUDA)
   target_compile_definitions(torch_cuda PRIVATE USE_CUDA)
 
   if(USE_CUSPARSELT)
-      target_link_libraries(torch_cuda PRIVATE torch::cusparselt)
+      target_link_libraries(torch_cuda PUBLIC CUSPARSELT_LIBRARY_PATH)
       target_compile_definitions(torch_cuda PRIVATE USE_CUSPARSELT)
   endif()
   if(USE_NCCL)
