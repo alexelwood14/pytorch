@@ -18,6 +18,8 @@ import ctypes
 import inspect
 import threading
 
+print("A PyTorch fork for Dynamic Layered Mixed Precision Training and Inference.")
+
 # multipy/deploy is setting this import before importing torch, this is the most
 # reliable way we have to detect if we're running within deploy.
 # https://github.com/pytorch/multipy/blob/d60f34ad38c371e441fe7ffdb77a3c3dda5a5d19/multipy/runtime/interpreter/interpreter_impl.cpp#L134-L137
