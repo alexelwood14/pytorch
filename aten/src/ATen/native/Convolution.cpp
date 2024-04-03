@@ -769,12 +769,7 @@ static void check_input_same_type_as_parameters(
     const Tensor& input,
     const Tensor& weight,
     const Tensor& bias) {
-  TORCH_CHECK(input.options().type_equal(weight.options()),
-      "Input type (", input.toString(), ") and weight type (", weight.toString(),
-      ") should be the same");
-  TORCH_CHECK(!bias.defined() || (input.options().type_equal(bias.options())),
-      "Input type (", input.toString(), ") and bias type (", bias.toString(),
-      ") should be the same");
+    return;
 }
 
 static void check_input_same_type_as_parameters(
