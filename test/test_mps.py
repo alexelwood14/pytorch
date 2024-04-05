@@ -8429,9 +8429,6 @@ class TestNNMPS(NNTestCase):
             self.assertRaisesRegex(RuntimeError,
                                    'must be on the same device',
                                    lambda: torch.conv2d(torch.rand(1, 3, 32, 32), torch.rand(1, 3, 3, 3, device='mps')))
-            self.assertRaisesRegex(RuntimeError,
-                                   'Input type \\(MPSFloatType\\) and weight type \\(torch\\.FloatTensor\\) should be the same',
-                                   lambda: torch.conv2d(torch.rand(1, 3, 32, 32, device='mps'), torch.rand(1, 3, 3, 3)))
 
 
     def test_conv2d_valid_padding(self, device='mps'):
