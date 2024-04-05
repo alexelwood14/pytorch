@@ -808,7 +808,6 @@ at::Tensor complex_convolution(
     bool transposed,
     SymIntArrayRef output_padding,
     c10::SymInt groups) {
-  check_input_same_type_as_parameters(input, weight, bias);
   auto [i_r, i_i] = complex_to_real(input.resolve_conj());
   auto [w_r, w_i] = complex_to_real(weight.resolve_conj());
 
@@ -845,7 +844,6 @@ at::Tensor complex_convolution_mode(
     c10::SymIntArrayRef dilation,
     c10::SymInt groups) {
   auto bias = bias_opt.value_or(Tensor());
-  check_input_same_type_as_parameters(input, weight, bias);
   auto [i_r, i_i] = complex_to_real(input.resolve_conj());
   auto [w_r, w_i] = complex_to_real(weight.resolve_conj());
 
