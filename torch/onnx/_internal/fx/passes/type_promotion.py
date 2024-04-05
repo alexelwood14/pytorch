@@ -184,10 +184,9 @@ class ElementwiseTypePromotionRule(TypePromotionRule):
         since there is no way to differentiate between inserted upcasts and model code
         casts. Hence we consolidate the input dtype to the result dtype to avoid this.
         """
-        if (
-            not self._USE_OPMATH
-            and self.promotion_kind
-            == _prims_common.ELEMENTWISE_TYPE_PROMOTION_KIND.DEFAULT
+        if not self._USE_OPMATH and self.promotion_kind in (
+            _prims_common.ELEMENTWISE_TYPE_PROMOTION_KIND.DEFAULT,
+            _prims_common.ELEMENTWISE_TYPE_PROMOTION_KIND.INT_TO_FLOAT,
         ):
             return result_dtype
         return computed_dtype
@@ -216,8 +215,8 @@ class ElementwiseTypePromotionRule(TypePromotionRule):
         )
 
         return TypePromotionSnapshot(
-            {i: consolidated_input_dtype for i in candidate_args.keys()},
-            {name: consolidated_input_dtype for name in candidate_kwargs.keys()},
+            dict.fromkeys(candidate_args.keys(), consolidated_input_dtype),
+            dict.fromkeys(candidate_kwargs.keys(), consolidated_input_dtype),
             result_dtype,
         )
 
@@ -1659,7 +1658,7 @@ class InsertTypePromotion(_pass.Transform):
     metadata, specifically the fake tensor stored under node.meta["val"], and ensure it
     reflects the latest changes.
 
-    See [FXE0015: fx_node_insert_type_promotion](https://pytorch.org/docs/master/generated/onnx_dynamo_diagnostics_rules/FXE0015%3Afx-node-insert-type-promotion.html) for more details.  # noqa: B950
+    See [FXE0015: fx_node_insert_type_promotion](https://pytorch.org/docs/main/generated/onnx_dynamo_diagnostics_rules/FXE0015%3Afx-node-insert-type-promotion.html) for more details.  # noqa: B950
     """
 
     def __init__(

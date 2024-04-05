@@ -39,6 +39,7 @@ from github_utils import (
     gh_fetch_json_list,
     gh_fetch_merge_base,
     gh_fetch_url,
+    gh_graphql,
     gh_post_commit_comment,
     gh_post_pr_comment,
     gh_update_pr_state,
@@ -152,12 +153,14 @@ GH_COMMIT_AUTHORS_FRAGMENT = """
 fragment CommitAuthors on PullRequestCommitConnection {
   nodes {
     commit {
-      author {
-        user {
-          login
+      authors(first: 2) {
+        nodes {
+          user {
+            login
+          }
+          email
+          name
         }
-        email
-        name
       }
       oid
     }
@@ -458,19 +461,6 @@ HAS_NO_CONNECTED_DIFF_TITLE = (
 IGNORABLE_FAILED_CHECKS_THESHOLD = 10
 
 
-def gh_graphql(query: str, **kwargs: Any) -> Dict[str, Any]:
-    rc = gh_fetch_url(
-        "https://api.github.com/graphql",
-        data={"query": query, "variables": kwargs},
-        reader=json.load,
-    )
-    if "errors" in rc:
-        raise RuntimeError(
-            f"GraphQL query {query}, args {kwargs} failed: {rc['errors']}"
-        )
-    return cast(Dict[str, Any], rc)
-
-
 def gh_get_pr_info(org: str, proj: str, pr_no: int) -> Any:
     rc = gh_graphql(GH_GET_PR_INFO_QUERY, name=proj, owner=org, number=pr_no)
     return rc["data"]["repository"]["pullRequest"]
@@ -746,7 +736,7 @@ class GitHubPR:
         # work for ghstack where the base is the custom branch, i.e. gh/USER/ID/base,
         # so let's just use main instead
         self.merge_base = gh_fetch_merge_base(
-            self.org, self.project, last_commit_oid, "main"
+            self.org, self.project, last_commit_oid, self.default_branch()
         )
 
         # Fallback to baseRefOid if the API call fails, i.e. rate limit. Note that baseRefOid
@@ -846,14 +836,14 @@ class GitHubPR:
 
         def add_authors(info: Dict[str, Any]) -> None:
             for node in info["commits_with_authors"]["nodes"]:
-                author_node = node["commit"]["author"]
-                user_node = author_node["user"]
-                author = f"{author_node['name']} <{author_node['email']}>"
-                if user_node is None:
-                    # If author is not github user, user node will be null
-                    authors.append(("", author))
-                else:
-                    authors.append((cast(str, user_node["login"]), author))
+                for author_node in node["commit"]["authors"]["nodes"]:
+                    user_node = author_node["user"]
+                    author = f"{author_node['name']} <{author_node['email']}>"
+                    if user_node is None:
+                        # If author is not github user, user node will be null
+                        authors.append(("", author))
+                    else:
+                        authors.append((cast(str, user_node["login"]), author))
 
         info = self.info
         for _ in range(100):
@@ -949,11 +939,6 @@ class GitHubPR:
 
     def get_authors(self) -> Dict[str, str]:
         rc = {}
-        # TODO: replace with  `self.get_commit_count()` when GraphQL pagination can be used
-        # to fetch all commits, see https://gist.github.com/malfet/4f35321b0c9315bcd7116c7b54d83372
-        # and https://support.github.com/ticket/enterprise/1642/1659119
-        if self.get_commit_count() <= 250:
-            assert len(self._fetch_authors()) == self.get_commit_count()
         for idx in range(len(self._fetch_authors())):
             rc[self.get_committer_login(idx)] = self.get_committer_author(idx)
 
@@ -1115,6 +1100,12 @@ class GitHubPR:
             msg_body = re.sub(RE_GHSTACK_DESC, "", msg_body)
         msg = self.get_title() + f" (#{self.pr_num})\n\n"
         msg += msg_body
+
+        # Mention PR co-authors
+        for author_login, author_name in self.get_authors().items():
+            if author_login != self.get_pr_creator_login():
+                msg += f"\nCo-authored-by: {author_name}"
+
         msg += f"\nPull Request resolved: {self.get_pr_url()}\n"
         msg += f"Approved by: {approved_by_urls}\n"
         if ghstack_deps:
@@ -1407,7 +1398,10 @@ def find_matching_merge_rule(
         )
         required_checks = list(
             filter(
-                lambda x: "EasyCLA" in x or not skip_mandatory_checks, mandatory_checks
+                lambda x: ("EasyCLA" in x)
+                or ("Facebook CLA Check" in x)
+                or not skip_mandatory_checks,
+                mandatory_checks,
             )
         )
         pending_checks, failed_checks, _ = categorize_checks(
@@ -1417,6 +1411,13 @@ def find_matching_merge_rule(
             if rule.ignore_flaky_failures
             else 0,
         )
+
+        # categorize_checks assumes all tests are required if required_checks is empty.
+        # this is a workaround as we want to keep that behavior for categorize_checks
+        # generally.
+        if not required_checks:
+            pending_checks = []
+            failed_checks = []
 
         hud_link = f"https://hud.pytorch.org/{pr.org}/{pr.project}/commit/{pr.last_commit()['oid']}"
         if len(failed_checks) > 0:
@@ -2092,8 +2093,7 @@ def merge(
 
     check_for_sev(pr.org, pr.project, skip_mandatory_checks)
 
-    if skip_mandatory_checks or can_skip_internal_checks(pr, comment_id):
-        # do not wait for any pending signals if PR is closed as part of co-development process
+    if skip_mandatory_checks:
         gh_post_pr_comment(
             pr.org,
             pr.project,
@@ -2304,7 +2304,6 @@ def main() -> None:
             get_ghstack_prs(repo, pr)  # raises error if out of sync
         pr.merge_changes(
             repo,
-            branch="main",
             skip_mandatory_checks=True,
             skip_all_rule_checks=True,
         )

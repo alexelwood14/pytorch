@@ -11,7 +11,6 @@
 #include <c10/util/Exception.h>
 
 #include <structmember.h>
-#include <cstring>
 #include <limits>
 #include <sstream>
 
@@ -142,9 +141,9 @@ PyObject* THPDevice_rc(PyObject* a, PyObject* b, int op) {
     case Py_LE:
     case Py_GT:
     case Py_GE:
-      C10_THROW_ERROR(TypeError, "comparison not implemented");
+      throw torch::TypeError("comparison not implemented");
     default:
-      C10_THROW_ERROR(TypeError, "unexpected comparison op");
+      throw torch::TypeError("unexpected comparison op");
   }
   END_HANDLE_TH_ERRORS
 }
