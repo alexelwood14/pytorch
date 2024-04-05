@@ -21,8 +21,20 @@ cmake_policy(SET CMP0092 NEW)
 
 set(CMAKE_C_COMPILER /opt/cray/pe/gcc/11.2.0/bin/gcc)
 set(CMAKE_CXX_COMPILER /opt/cray/pe/gcc/11.2.0/bin/g++)
-
-
+set(USE_ROCM 0)
+set(CMAKE_INSTALL_PREFIX /lustre/home/br-aelwood/anaconda3/envs/pytorch-build)
+set(CUDNN_LIBRARY_PATH /lustre/home/br-aelwood/anaconda3/envs/pytorch-build/lib/libcudnn.so)
+set(CUDNN_INCLUDE_PATH /lustre/home/br-aelwood/anaconda3/envs/pytorch-build/include)
+set(TORCH_CUDA_ARCH_LIST "5.0;8.0;8.6;8.9;9.0")
+set(CUDA_HOME /opt/nvidia/hpc_sdk/Linux_x86_64/2023/cuda/12.1/)
+set(CUDA_CUDART_LIBRARY /opt/nvidia/hpc_sdk/Linux_x86_64/2023/cuda/lib64/libcudart.so)
+set(CUDA_INCLUDE_DIRS /opt/nvidia/hpc_sdk/Linux_x86_64/2023/cuda/include)
+set(CUDA_TOOLKIT_ROOT_DIR /opt/nvidia/hpc_sdk/Linux_x86_64/2023/cuda/12.1/)
+set(CUDA_NVCC_EXECUTABLE /opt/nvidia/hpc_sdk/Linux_x86_64/2023/cuda/12.1/bin/nvcc)
+set(CUSPARSELT_LIBRARY_PATH /lustre/home/br-aelwood/anaconda3/envs/pytorch-build/lib/libcusparseLt.so)
+set(CUSPARSELT_INCLUDE_PATH /lustre/home/br-aelwood/anaconda3/envs/pytorch-build/include)
+set(ENABLE_NCCL_SLIMMING OFF)
+set(TORCH_USE_CUDA_DSA 1)
 # ---[ Project and semantic versioning.
 project(Torch CXX C)
 
