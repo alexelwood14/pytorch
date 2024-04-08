@@ -87,7 +87,6 @@ std::tuple<Tensor&, Tensor&> median_with_indices_impl(
 
   checkDeviceType("median", {values, indices}, self.device().type());
   checkScalarType("median", {indices, "indices", 1}, kLong);
-  checkSameType("median", {values, "values", 0}, {self, "self", 2});
 
   TORCH_CHECK(
       self.dim() <= MAX_TENSORINFO_DIMS,

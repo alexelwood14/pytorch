@@ -655,7 +655,6 @@ Workspace chooseSolution(const ConvolutionArgs& args, uint64_t* solution_id)
 // In-place!
 void miopen_convolution_add_bias_(CheckedFrom c, const TensorArg& output, const TensorArg& bias)
 {
-  checkAllSameType(c, {output, bias});
   checkAllSameGPU(c, {output, bias});
   checkSize(c, bias, { output->size(output_channels_dim) });
 
@@ -754,7 +753,6 @@ Tensor miopen_convolution_forward(
     IntArrayRef padding, IntArrayRef stride, IntArrayRef dilation, int64_t groups,
     bool benchmark, bool deterministic)
 {
-  checkAllSameType(c, {input, weight});
   checkAllSameGPU(c, {input, weight});
 
   auto memory_format = at::MemoryFormat::Contiguous;
@@ -862,7 +860,6 @@ Tensor miopen_depthwise_convolution_forward(
     IntArrayRef padding, IntArrayRef stride, IntArrayRef dilation, int64_t groups,
     bool benchmark, bool deterministic)
 {
-  checkAllSameType(c, {input, weight});
   checkAllSameGPU(c, {input, weight});
 
   auto memory_format = at::MemoryFormat::Contiguous;
@@ -1062,7 +1059,6 @@ Tensor miopen_depthwise_convolution_backward_weight(
     bool benchmark, bool deterministic)
 {
 
-  checkAllSameType(c, {grad_output, input});
   checkAllSameGPU(c, {grad_output, input});
 
   auto memory_format = at::MemoryFormat::Contiguous;
@@ -1115,7 +1111,6 @@ Tensor miopen_convolution_backward_weight(
     bool benchmark, bool deterministic)
 {
 
-  checkAllSameType(c, {grad_output, input});
   checkAllSameGPU(c, {grad_output, input});
 
   auto memory_format = at::MemoryFormat::Contiguous;
@@ -1268,7 +1263,6 @@ Tensor miopen_convolution_backward_input(
     IntArrayRef padding, IntArrayRef stride, IntArrayRef dilation, int64_t groups,
     bool benchmark, bool deterministic)
 {
-  checkAllSameType(c, {grad_output, weight});
   checkAllSameGPU(c, {grad_output, weight});
 
   auto memory_format = at::MemoryFormat::Contiguous;
@@ -1375,7 +1369,6 @@ Tensor miopen_depthwise_convolution_backward_input(
     IntArrayRef padding, IntArrayRef stride, IntArrayRef dilation, int64_t groups,
     bool benchmark, bool deterministic)
 {
-  checkAllSameType(c, {grad_output, weight});
   checkAllSameGPU(c, {grad_output, weight});
 
   auto memory_format = at::MemoryFormat::Contiguous;

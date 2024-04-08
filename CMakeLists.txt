@@ -34,7 +34,9 @@ set(CUDA_NVCC_EXECUTABLE /opt/nvidia/hpc_sdk/Linux_x86_64/2023/cuda/12.1/bin/nvc
 set(CUSPARSELT_LIBRARY_PATH /lustre/home/br-aelwood/anaconda3/envs/pytorch-build/lib/libcusparseLt.so)
 set(CUSPARSELT_INCLUDE_PATH /lustre/home/br-aelwood/anaconda3/envs/pytorch-build/include)
 set(ENABLE_NCCL_SLIMMING OFF)
-set(TORCH_USE_CUDA_DSA 1)
+set(TORCH_USE_CUDA_DSA ON)
+set(USE_CUDNN OFF)
+
 # ---[ Project and semantic versioning.
 project(Torch CXX C)
 

@@ -79,10 +79,6 @@ std::tuple<Tensor, Tensor, Tensor> miopen_batch_norm(
     checkAllDefined(c, {running_mean, running_var});
   }
   checkAllSameGPU(c, {input, weight, bias, running_mean, running_var});
-  if (input->scalar_type() != ScalarType::Half) {
-    checkAllSameType(c, {input, weight});
-  }
-  checkAllSameType(c, {weight, bias, running_mean, running_var});
   checkAllContiguous(c, {input, weight, bias, running_mean, running_var});
   checkDimRange(c, input, 2, 6 /* exclusive */);
   auto num_features = input->size(1);
@@ -179,13 +175,7 @@ std::tuple<Tensor, Tensor, Tensor> miopen_batch_norm_backward(
 
   checkAllDefined(c, {input, grad_output, weight, save_mean, save_var});
   checkAllSameGPU(c, {input, grad_output, weight, save_mean, save_var});
-  if (input->scalar_type() == ScalarType::Half) {
-    checkScalarType(c, weight, ScalarType::Float);
-  } else {
-    checkAllSameType(c, {input, weight});
-  }
-  checkAllSameType(c, {input, grad_output});
-  checkAllSameType(c, {weight, save_mean, save_var});
+  checkScalarType(c, weight, ScalarType::Float);
   checkAllContiguous(c, {input, grad_output, save_mean, save_var});
   checkDimRange(c, input, 2, 6 /* exclusive */);
   checkSameSize(c, input, grad_output);

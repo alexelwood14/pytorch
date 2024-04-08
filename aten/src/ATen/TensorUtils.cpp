@@ -168,14 +168,6 @@ void checkAllSameGPU(CheckedFrom c, ArrayRef<TensorArg> tensors) {
   checkAllSame(c, tensors, checkSameGPU);
 }
 
-void checkSameType(CheckedFrom c, const TensorArg& t1, const TensorArg& t2) {
-  TORCH_CHECK(
-    t1->options().type_equal(t2->options()),
-    "Expected tensor for ", t1, " to have the same type as tensor for ", t2,
-    "; but type ", t1->toString(), " does not equal ", t2->toString(),
-    " (while checking arguments for ", c, ")");
-}
-
 void checkScalarType(CheckedFrom c, const TensorArg& t, ScalarType ty) {
   TORCH_CHECK(
     t->scalar_type() == ty,
@@ -202,10 +194,6 @@ void checkScalarTypes(CheckedFrom c, const TensorArg& t,
           << " instead (while checking arguments for " << c << ")";
       AT_ERROR(oss.str());
     }
-}
-
-void checkAllSameType(CheckedFrom c, ArrayRef<TensorArg> tensors) {
-  checkAllSame(c, tensors, checkSameType);
 }
 
 void checkSameDim(CheckedFrom c, const TensorGeometryArg& t1, const TensorGeometryArg& t2) {

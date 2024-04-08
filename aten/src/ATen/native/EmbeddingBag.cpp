@@ -897,7 +897,6 @@ void check_arguments(
   checkScalarTypes("embedding_bag", indices_arg, {kLong, kInt});
   auto offsets_arg = TensorArg(offsets, "offsets", 1);
   checkScalarTypes("embedding_bag", offsets_arg, {kLong, kInt});
-  checkSameType("embedding_bag", indices_arg, offsets_arg);
   auto weight_arg = TensorArg(weight, "weight", 1);
   checkScalarTypes(
       "embedding_bag", weight_arg, {kHalf, kBFloat16, kFloat, kDouble});
@@ -920,7 +919,6 @@ void check_arguments(
         "embedding_bag: per_sample_weights only supported with mode='sum'");
     auto per_input_weights_arg = TensorArg(
         per_sample_weights.value(),"per_sample_weights", 1);
-    checkSameType("embedding_bag", weight_arg, per_input_weights_arg);
     TORCH_CHECK(per_sample_weights.value().dim() == 1);
     TORCH_CHECK(per_sample_weights.value().numel() == indices.numel());
   }
@@ -1422,7 +1420,6 @@ Tensor _embedding_bag_backward_symint(const Tensor &grad, const Tensor &indices_
   checkContiguous("embedding_bag", indices_arg);
   auto offsets_arg = TensorArg(offsets, "offsets", 1);
   checkScalarTypes("embedding_bag", offsets_arg, {kLong, kInt});
-  checkSameType("embedding_bag", indices_arg, offsets_arg);
   checkContiguous("embedding_bag", offsets_arg);
 
   Tensor offset2bag_;

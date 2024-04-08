@@ -90,7 +90,6 @@ Tensor cudnn_grid_sampler_forward(const Tensor& input_t, const Tensor& grid_t) {
   TensorArg input{input_contig, "input", 1}, grid{grid_contig, "grid", 2};
   CheckedFrom c = "cudnn_grid_sampler_forward";
   checkAllSameGPU(c, {input, grid});
-  checkAllSameType(c, {input, grid});
   checkGridSize(c, grid, input);
   checkDim(c, input, 4);
 

@@ -135,7 +135,6 @@ static Tensor _mps_convolution_impl(const Tensor& input_t,
   using namespace at::native::mps;
   CheckedFrom c = "mps_convolution";
   TensorArg input{input_t, "input", 1}, weight{weight_t, "weight", 2};
-  checkAllSameType(c, {input, weight});
   checkAllSameGPU(c, {input, weight});
 
   bool bias_defined;
@@ -349,7 +348,6 @@ static Tensor mps_convolution_backward_input(IntArrayRef input_size,
   TORCH_CHECK(isFloatingType(grad_output_t.scalar_type()), "Convolution is supported only for Floating types");
   CheckedFrom c = "mps_convolution_backward_input";
   TensorArg grad_output{grad_output_t, "grad_output", 1}, weight{weight_t, "weight", 2};
-  checkAllSameType(c, {grad_output, weight});
   checkAllSameGPU(c, {grad_output, weight});
   auto memory_format = grad_output_t.suggest_memory_format();
   bool is_channels_last = (memory_format == at::MemoryFormat::ChannelsLast) && !is3DConv;
@@ -512,7 +510,6 @@ static Tensor mps_convolution_backward_weights(IntArrayRef weight_size,
   TensorArg grad_output{grad_output_t, "grad_output", 1};
   TensorArg input{input_t, "input", 2};
 
-  checkAllSameType(c, {grad_output, input});
   checkAllSameGPU(c, {grad_output, input});
 
   auto grad_weight_t =

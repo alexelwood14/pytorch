@@ -512,7 +512,6 @@ std::tuple<Tensor&, Tensor&> median_with_indices_impl(
 
   checkDeviceType("median", {values, indices}, self.device().type());
   checkScalarType("median", {indices, "indices", 1}, kLong);
-  checkSameType("median", {values, "values", 0}, {self, "self", 2});
 
   std::vector<int64_t> out_shape = self.sizes().vec();
   if (self.dim() > 0) {

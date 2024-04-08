@@ -214,7 +214,6 @@ void cudnn_convolution_forward_out(
     bool benchmark,
     bool deterministic,
     bool allow_tf32) {
-  checkAllSameType(c, {input, weight});
   checkAllSameGPU(c, {input, weight});
 
   auto memory_format = output->suggest_memory_format();
@@ -374,7 +373,6 @@ Tensor cudnn_convolution_backward_input(
     bool benchmark,
     bool deterministic,
     bool allow_tf32) {
-  checkAllSameType(c, {grad_output, weight});
   checkAllSameGPU(c, {grad_output, weight});
 
   auto memory_format = cudnn_conv_suggest_memory_format(*grad_output, *weight);
@@ -519,7 +517,6 @@ Tensor cudnn_convolution_backward_weight(
   Tensor input_contig_t = input_t.contiguous(layout);
   TensorArg input{input_contig_t, "input", 2};
 
-  checkAllSameType(c, {grad_output_contig, input});
   checkAllSameGPU(c, {grad_output_contig, input});
 
   auto grad_weight_t =

@@ -358,7 +358,6 @@ _embedding_bag_cuda(const Tensor &weight, const Tensor &indices_,
   checkScalarTypes("embedding_bag_cuda", indices_arg, {kLong, kInt});
   auto offsets_arg = TensorArg(offsets, "offsets", 1);
   checkScalarTypes("embedding_bag_cuda", offsets_arg, {kLong, kInt});
-  checkSameType("embedding_bag_cuda", indices_arg, offsets_arg);
   auto weight_arg = TensorArg(weight, "weight", 1);
   checkSameGPU("embedding_bag_cuda", weight_arg, indices_arg);
   checkSameGPU("embedding_bag_cuda", weight_arg, offsets_arg);
