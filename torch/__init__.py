@@ -19,6 +19,7 @@ import inspect
 import threading
 
 print("A PyTorch fork for Dynamic Layered Mixed Precision Training and Inference.")
+print("This revision was created on April 8th 2024")
 
 # multipy/deploy is setting this import before importing torch, this is the most
 # reliable way we have to detect if we're running within deploy.

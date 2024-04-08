@@ -38,28 +38,11 @@ void check_mkldnn_binary_fusion_inputs(
     const Tensor& other,
     const Tensor& weight,
     const Tensor& bias) {
-  if (!weight.is_mkldnn()) {
-    TORCH_CHECK(
-        input.options().type_equal(weight.options()),
-        "Input type (",
-        input.toString(),
-        ") and weight type (",
-        weight.toString(),
-        ") should be the same");
-  } else {
     TORCH_CHECK(
         input.scalar_type() == input.scalar_type(),
         "mkldnn pointwise binary: input dtype and weight dtype should be the same");
-  }
   TORCH_CHECK(
-      input.options().type_equal(other.options()),
-      "Input type (",
-      input.toString(),
-      ") and other type (",
-      other.toString(),
-      ") should be the same");
-  TORCH_CHECK(
-      !bias.defined() || (input.options().type_equal(bias.options())),
+      !bias.defined(),
       "Input type (",
       input.toString(),
       ") and bias type (",

@@ -345,20 +345,6 @@ static Tensor mkl_linear(
       at::borrow_from_optional_tensor(bias_opt);
   const Tensor& bias = *bias_maybe_owned;
   TORCH_CHECK(
-      self.options().type_equal(origin_weight_t.options()),
-      "Input type (",
-      self.toString(),
-      ") and weight type (",
-      origin_weight_t.toString(),
-      ") should be the same");
-  TORCH_CHECK(
-      !bias.defined() || (self.options().type_equal(bias.options())),
-      "Input type (",
-      self.toString(),
-      ") and bias type (",
-      bias.toString(),
-      ") should be the same");
-  TORCH_CHECK(
       mkl_weight_t.scalar_type() == origin_weight_t.scalar_type() &&
           origin_weight_t.scalar_type() == kFloat,
       "mkl_linear: weight dtype should be float");
