@@ -161,9 +161,6 @@ void slow_conv2d_forward(
   }
 
   if (bias.defined()) {
-    TORCH_CHECK(bias.scalar_type() == input.scalar_type(),
-                "Expected bias to have type ", input.scalar_type(),
-                " but got ", bias.scalar_type());
     output.copy_(bias.view({-1, 1, 1}));
   } else {
     output.zero_();
